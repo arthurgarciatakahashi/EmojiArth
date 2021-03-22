@@ -8,9 +8,14 @@ struct EmojiArtDocumentView: View {
         VStack {
             ScrollView(.horizontal) {
                 HStack {
-                    
+                    ForEach(EmojiArtDocument.palette.map { String($0) }, id: \.self ) { emoji in
+                        Text(emoji)
+                            .font(Font.system(size: self.defaultEmojiSize))
+                    }
                 }
             }
         }
+        .padding(.horizontal)
+        Rectangle().foregroundColor(.yellow).edgesIgnoringSafeArea([.horizontal, .bottom])
     }
 }
