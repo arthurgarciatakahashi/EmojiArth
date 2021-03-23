@@ -1,8 +1,14 @@
 import SwiftUI
 
 class EmojiArtDocument: ObservableObject {
-    static let palette: String = "🏰🌋🌙🐏🐓🐉🔥💧⚡️🌪💥🦂🐍🦖🦉🧙🏻‍♂️🧝🏻‍♀️🧝🏻‍♂️🧝🏻🧟‍♂️"
+    static let palette: String = "🏰🌋🌙🐏🐓🐉🔥💧⚡️🌪💥🦂🐍🦖🦉🧙🏻‍♂️🧝🏻‍♀️🧝🏻‍♂️🧝🏻🧟‍♂️🗡🍗"
     @Published private var emojiArt: EmojiArt = EmojiArt()
+    @Published private(set) var backgroundImage: UIImage?
+    
+    var emojis: [EmojiArt.Emoji] {
+        emojiArt.emojis
+    }
+    
     
     // MARK: - Intent
     
@@ -25,4 +31,32 @@ class EmojiArtDocument: ObservableObject {
         }
     }
     
+    func setBackgroundURL(_ url: URL?) {
+        emojiArt.backgroundURL = url?.imageURL
+        fetchBackgroundImageData()
+    }
+    
+    func fetchBackgroundImageData() {
+        backgroundImage = nil
+        if let url = self.emojiArt.backgroundURL {
+            DispatchQueue.global(qos: .userInitiated).async {
+                if let imageData = try? Data(contentsOf: url) {
+                    DispatchQueue.main.async {
+                        if url == self.emojiArt.backgroundURL {
+                            self.backgroundImage = UIImage(data: imageData)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+extension EmojiArt.Emoji {
+    var fontSize: CGFloat {
+        CGFloat(self.size)
+    }
+    var location: CGPoint {
+        CGPoint(x: CGFloat(x), y: CGFloat(y))
+    }
 }
