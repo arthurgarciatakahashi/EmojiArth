@@ -2,13 +2,26 @@ import SwiftUI
 
 class EmojiArtDocument: ObservableObject {
     static let palette: String = "🏰🌋🌙🐏🐓🐉🔥💧⚡️🌪💥🦂🐍🦖🦉🧙🏻‍♂️🧝🏻‍♀️🧝🏻‍♂️🧝🏻🧟‍♂️🗡🍗"
-    @Published private var emojiArt: EmojiArt = EmojiArt()
-    @Published private(set) var backgroundImage: UIImage?
+    //@Published //there is a bug with property wrappers so i am using willset instead
+    private var emojiArt: EmojiArt {
+        willSet {
+            objectWillChange.send()
+        }
+        didSet {
+            UserDefaults.standard.set(emojiArt.json, forKey: EmojiArtDocument.untitled)
+        }
+    }
     
+    @Published private(set) var backgroundImage: UIImage?
+    private static let untitled = "EmojiArtDocument.Untitled"
     var emojis: [EmojiArt.Emoji] {
         emojiArt.emojis
     }
     
+    init() {
+        emojiArt = EmojiArt(json: UserDefaults.standard.data(forKey: EmojiArtDocument.untitled)) ?? EmojiArt()
+        fetchBackgroundImageData()
+    }
     
     // MARK: - Intent
     
