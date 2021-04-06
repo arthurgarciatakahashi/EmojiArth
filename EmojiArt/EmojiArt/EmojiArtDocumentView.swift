@@ -33,6 +33,7 @@ struct EmojiArtDocumentView: View {
                 }
             }
             .clipped()
+            .gesture(self.zoomGesture())
             .edgesIgnoringSafeArea([.horizontal, .bottom])
             .onDrop(of: ["public.image","public.text"], isTargeted: nil) { providers, location in
                 var location = geometry.convert(location, from: .global)
@@ -44,7 +45,22 @@ struct EmojiArtDocumentView: View {
         }
     }
     
-    @State private var zoomScale: CGFloat = 1.0
+    @State private var steadyZoomScale: CGFloat = 1.0
+    @GestureState private var gestureZoomScale: CGFloat = 1.0
+    
+    private var zoomScale: CGFloat {
+        steadyZoomScale * gestureZoomScale
+    }
+    
+    func zoomGesture() -> some Gesture {
+        MagnificationGesture()
+            .updating($gestureZoomScale) { latestGestureScale, gestureZoomScale, transaction in
+                    gestureZoomScale = latestGestureScale
+            }
+            .onEnded { finalGestureScale in
+                self.steadyZoomScale *= finalGestureScale
+            }
+    }
     
     private func doubleTapToZoom(in size: CGSize) -> some Gesture {
         TapGesture(count: 2)
@@ -59,7 +75,7 @@ struct EmojiArtDocumentView: View {
         if let image = image, image.size.width > 0, image.size.height > 0 {
             let hZoom = size.width / image.size.width
             let vZoom = size.height / image.size.height
-            self.zoomScale = min(hZoom, vZoom)
+            self.steadyZoomScale = min(hZoom, vZoom)
         }
     }
     
